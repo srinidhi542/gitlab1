@@ -1,0 +1,1193 @@
+?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example</groupId>
+    <artifactId>library-management</artifactId>
+    <version>1.0.0</version>
+    <packaging>war</packaging>
+
+    <name>Library Management System</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>17</maven.compiler.release>
+    </properties>
+
+    <dependencies>
+        <!-- Servlet API is supplied by the Tomcat server at runtime. -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>library-management</finalName>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>17</release>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+BRO, here's your **SE Lab Internal 2 last-minute practical cheat sheet** 🔥
+
+Organized experiment-wise, with the **procedure, commands, Dockerfiles, Jenkins scripts, expected output, and common mistakes**.
+
+Use it as a reference while practising. The most important thing in the exam is remembering the sequence of steps, not memorizing every command character by character.
+
+## **Experiment 1 — Docker: Single Container**
+
+**Aim:** Build and run an application inside one Docker container.
+
+**Process:** Create application → Dockerfile → Build image → Run container → Verify.
+
+### **Commands**
+
+```
+docker --version
+docker info
+docker images
+docker ps
+docker ps -a
+```
+
+### **Example Dockerfile — Nginx website**
+
+Create `index.html`, then create `Dockerfile`:
+
+```
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+EXPOSE 80
+```
+
+Build and run:
+
+```
+docker build -t myapp .
+docker run -d --name mycontainer -p 8080:80 myapp
+docker ps
+docker logs mycontainer
+```
+
+Open `http://localhost:8080`.
+
+### **Important commands**
+
+| Command                          | Purpose                  |
+| -------------------------------- | ------------------------ |
+| `docker pull nginx`              | Download image           |
+| `docker build -t myapp .`        | Build image              |
+| `docker run -d -p 8080:80 myapp` | Run container            |
+| `docker ps`                      | Running containers       |
+| `docker ps -a`                   | All containers           |
+| `docker images`                  | List images              |
+| `docker logs NAME`               | View logs                |
+| `docker exec -it NAME sh`        | Enter container          |
+| `docker stop NAME`               | Stop                     |
+| `docker start NAME`              | Start again              |
+| `docker rm NAME`                 | Delete stopped container |
+| `docker rmi IMAGE`               | Delete image             |
+
+**Remember:** `-d` = detached/background, `-p HOST:CONTAINER` = port mapping, `-t` = image tag, `.` = current directory.
+
+## **Experiment 2 — Docker: Multi-Container Using Compose**
+
+**Aim:** Run multiple connected services together, such as a web application and database.
+
+**Process:** Create application → Create Dockerfiles if needed → Write `compose.yaml` → Start services → Test.
+
+### **Example&#x20;**`compose.yaml`
+
+```
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+```
+
+This starts **two containers**: Nginx and Redis. It demonstrates multi-container orchestration, although this particular Nginx image doesn't actually communicate with Redis.
+
+### **Commands**
+
+```
+docker compose up -d
+docker compose ps
+docker compose logs
+docker compose logs web
+docker compose down
+```
+
+If building from a Dockerfile:
+
+```
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+```
+
+```
+docker compose up --build -d
+```
+
+**Remember:**
+
+- `services` = containers to run
+- `image` = existing image
+- `build` = build from Dockerfile
+- `ports` = port mapping
+- `depends_on` = startup dependency ordering
+- `volumes` = persistent/shared storage
+- `environment` = environment variables
+
+**Viva:** Dockerfile builds **one image**; Docker Compose manages **multiple services**.
+
+## **Experiment 3 — Docker Hub + Redis + Custom Dockerfile**
+
+This is specifically in your **Week 7 manual**.&#x20;
+
+24BD1A663D-week7.docx
+
+
+
+**Process:** Pull Redis → Run container → Execute Redis commands → Stop/start → Create custom image → Push to Docker Hub.
+
+### **Redis commands**
+
+```
+docker pull redis
+docker run --name my-redis -d redis
+docker ps
+docker exec -it my-redis redis-cli
+```
+
+Inside Redis CLI:
+
+```
+SET name "Alice"
+GET name
+exit
+```
+
+Expected output of `GET name`: `"Alice"`.
+
+Stop and restart:
+
+```
+docker stop my-redis
+docker start my-redis
+docker rm -f my-redis
+```
+
+### **Redis Dockerfile**
+
+```
+FROM redis:latest
+CMD ["redis-server"]
+```
+
+```
+docker build -t redisnew .
+docker run --name myredisnew -d redisnew
+```
+
+### **Push image to Docker Hub**
+
+```
+docker login
+docker tag redisnew USERNAME/redisnew:latest
+docker push USERNAME/redisnew:latest
+docker pull USERNAME/redisnew:latest
+docker logout
+```
+
+Another method in your manual:
+
+```
+docker commit CONTAINER_ID USERNAME/redis1
+docker push USERNAME/redis1
+```
+
+`docker commit` creates an image from a container's current filesystem changes.
+
+### **Extra Docker commands for scenario questions**
+
+```
+docker stats
+docker inspect CONTAINER_NAME
+docker logs CONTAINER_NAME
+docker restart CONTAINER_NAME
+docker run --restart unless-stopped -d nginx
+docker run --memory=512m nginx
+docker save -o myimage.tar myapp
+docker load -i myimage.tar
+docker tag myapp myapp:v2
+docker network ls
+docker volume ls
+```
+
+## **Experiment 4 — Jenkins Freestyle: Maven Java + Maven Web**
+
+**Aim:** Automatically build and test Maven projects using Jenkins.
+
+**Process:** GitHub repo → Jenkins Freestyle job → Maven goals → Build → Test → View results.
+
+### **Maven Java — Week 9**
+
+1. Open `http://localhost:8080`.
+2. **New Item → Freestyle project**, name `MavenJava_Build`.
+3. Under **Source Code Management → Git**, enter repository URL and branch `*/main` (or the repository's actual branch).
+4. Under **Build Steps → Invoke top-level Maven targets**, select configured Maven installation and enter `clean`.
+5. Add another Maven build step with goal `install`.
+6. Under **Post-build Actions**, archive artifacts and configure **Build other projects → MavenJava_Test**.
+7. Save → **Build Now**.
+
+Create a second Freestyle job named `MavenJava_Test`, configure artifact copying from `MavenJava_Build`, and add Maven goal `test`.
+
+The manual also creates a **Build Pipeline View** connecting the Build and Test jobs.&#x20;
+
+24BD1A663D-WEEK9.docx
+
+
+
+### **Maven We 
+clean package  
+target/*.war
+Same procedure, but select the Maven Web repository. The usual package output is a `.war` file rather than a `.jar`, depending on the project's `pom.xml`.
+
+### **Maven commands to memorize**
+
+| Command                  | Meaning                                                  |
+| ------------------------ | -------------------------------------------------------- |
+| `mvn clean`              | Deletes old build output                                 |
+| `mvn compile`            | Compiles source code                                     |
+| `mvn test`               | Runs tests                                               |
+| `mvn package`            | Creates JAR/WAR                                          |
+| `mvn install`            | Builds and installs artifact into local Maven repository |
+| `mvn clean install`      | Clean + build + test + install                           |
+| `mvn -f pom.xml package` | Build using specified POM                                |
+
+**Important:** Maven `install` includes earlier lifecycle phases such as testing and packaging. You don't always need to invoke every goal separately.
+
+**Expected:** Jenkins build status **SUCCESS**, green check, and generated files inside `target/`.
+
+## **Experiment 5 — Jenkins Pipeline Script**
+
+**Aim:** Automate multiple build stages using pipeline code.
+
+**Process:** Jenkins → New Item → Pipeline → Definition: Pipeline script → Paste script → Save → Build Now.
+
+Your Week 10 manual calls this scripted pipeline, but its main examples use **Declarative Pipeline syntax** (`pipeline { ... }`). Learn both, because they are different Jenkins syntaxes.&#x20;
+
+24BD1A663D-WEEK10.docx
+
+
+
+### **A. Simplest pipeline — Hello World**
+
+```
+pipeline {
+    agent any
+
+    stages {
+        stage('Hello 1') {
+            steps {
+                echo 'Hello World'
+            }
+        }
+
+        stage('Hello 3') {
+            steps {
+                echo 'Hello 3'
+            }
+        }
+    }
+}
+```
+
+**Output:** Both stages complete successfully.
+
+### **B. Maven build pipeline — Linux**
+
+This is adapted to your actual GitHub Java project.
+
+```
+pipeline {
+    agent any
+
+    tools {
+        maven 'MAVEN_HOME'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/ShreeyanthD/docker-javaproject.git'
+            }
+        }
+
+        stage('Clean') {
+            steps {
+                sh 'mvn clean'
+            }
+        }
+
+        stage('Install') {
+            steps {
+                sh 'mvn install'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh 'mvn package'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'BUILD SUCCESSFUL'
+        }
+        failure {
+            echo 'BUILD FAILED'
+        }
+        always {
+            echo 'Pipeline completed'
+        }
+    }
+}
+```
+
+**Important:** `MAVEN_HOME` must match the Maven tool name configured under **Manage Jenkins → Tools**.
+
+### **C. Actual Scripted Pipeline syntax**
+
+```
+node {
+    stage('Checkout') {
+        git branch: 'main',
+            url: 'https://github.com/ShreeyanthD/docker-javaproject.git'
+    }
+
+    stage('Build') {
+        sh 'mvn clean package'
+    }
+
+    stage('Test') {
+        sh 'mvn test'
+    }
+}
+```
+
+**Difference:**
+
+- Declarative: `pipeline { agent any; stages { ... } }`
+- Scripted: `node { stage(...) { ... } }`
+
+### **Windows vs Linux Jenkins**
+
+| Windows Jenkins     | Linux Jenkins      |
+| ------------------- | ------------------ |
+| `bat 'mvn clean'`   | `sh 'mvn clean'`   |
+| `bat 'mvn test'`    | `sh 'mvn test'`    |
+| `bat 'mvn package'` | `sh 'mvn package'` |
+
+This depends on the **Jenkins agent operating system**, not merely the browser's OS.
+
+### **Build triggers**
+
+Go to **Job → Configure → Build Triggers**.
+
+| Trigger                    | Meaning                           |
+| -------------------------- | --------------------------------- |
+| Build periodically         | Runs on schedule                  |
+| Poll SCM                   | Jenkins checks Git for changes    |
+| GitHub hook trigger        | GitHub notifies Jenkins of pushes |
+| Build after other projects | Starts after another job finishes |
+
+Common Jenkins cron:
+
+```
+H/5 * * * *     Every ~5 minutes
+H * * * *       Once each hour
+H 18 * * *      Once daily during 6 PM hour
+```
+
+For an exact 6:00 PM schedule, use `0 18 * * *`.
+
+## **Experiment 6 — Jenkins + GitHub Webhooks**
+
+**Aim:** Automatically trigger Jenkins whenever code is pushed to GitHub.
+
+**Process:** Jenkins running → ngrok tunnel → GitHub webhook → Enable Jenkins trigger → Git push → Automatic build.
+
+### **Step 1 — Start Jenkins**
+
+Open:
+
+`http://localhost:8080`
+
+### **Step 2 — Expose Jenkins through ngrok**
+
+```
+ngrok config add-authtoken YOUR_TOKEN
+ngrok http 8080
+```
+
+You'll get a public HTTPS URL, for example:
+
+`https://example.ngrok-free.app`
+
+### **Step 3 — GitHub configuration**
+
+GitHub repository → **Settings → Webhooks → Add webhook**.
+
+| Field        | Value                                    |
+| ------------ | ---------------------------------------- |
+| Payload URL  | `https://YOUR-NGROK-URL/github-webhook/` |
+| Content type | `application/json`                       |
+| Events       | Just the push event                      |
+| Active       | Enabled                                  |
+
+**Don't forget the trailing&#x20;**`/github-webhook/`**!**
+
+### **Step 4 — Jenkins configuration**
+
+Open your Freestyle or Pipeline job → **Configure → Build Triggers** → enable:
+
+**GitHub hook trigger for GITScm polling**
+
+Save.
+
+### **Step 5 — Test with Git**
+
+```
+git add .
+git commit -m "Testing webhook"
+git push origin main
+```
+
+Expected: GitHub sends a webhook → ngrok forwards it → Jenkins starts a build automatically.
+
+Check **GitHub → Webhooks → Recent Deliveries** for successful delivery, and Jenkins **Build History** for the triggered build.&#x20;
+
+24BD1A663D-week11.docx
+
+
+
+### **Common webhook failures**
+
+| Problem                        | Fix                                                        |
+| ------------------------------ | ---------------------------------------------------------- |
+| GitHub cannot access localhost | Use ngrok                                                  |
+| Webhook returns 404            | Check `/github-webhook/`                                   |
+| Webhook succeeds but no build  | Enable Jenkins GitHub trigger and verify SCM configuration |
+| ngrok URL changed              | Update GitHub Payload URL                                  |
+| Jenkins doesn't respond        | Check Jenkins server and port                              |
+
+## **Experiment 7 — Kubernetes Using Minikube**
+
+**Aim:** Create, run, expose, scale, and manage an Nginx application using Kubernetes.
+
+**Process:** Start Minikube → Create Deployment → Verify Pod → Expose Service → Access Nginx → Scale → Test self-healing.
+
+### **Step 1 — Start Minikube**
+
+```
+minikube start --driver=docker
+minikube status
+kubectl get nodes
+```
+
+On Windows, Docker Desktop must be running when using the Docker driver.
+
+### **Step 2 — Create Deployment**
+
+```
+kubectl create deployment mynginx --image=nginx
+kubectl get deployments
+kubectl get pods
+```
+
+### **Step 3 — Expose as Service**
+
+```
+kubectl expose deployment mynginx --type=NodePort --port=80 --target-port=80
+kubectl get services
+```
+
+### **Step 4 — Access Nginx**
+
+```
+kubectl port-forward svc/mynginx 8084:80
+```
+
+Open `http://localhost:8084`.
+
+**Expected:** Welcome to nginx!
+
+Keep the port-forward terminal running while accessing the website.
+
+### **Step 5 — Scale Pods**
+
+```
+kubectl scale deployment mynginx --replicas=4
+kubectl get pods
+```
+
+Expected: **4 running Pods**.
+
+### **Step 6 — Self-healing**
+
+```
+kubectl delete pod POD_NAME
+kubectl get pods
+```
+Update and rollback 
+kubectl set image deployment/library-app nginx=nginx:1.27
+kubectl rollout status deployment/library-app
+
+
+Kubernetes automatically creates a replacement Pod to maintain the desired replica count.
+
+### **All important Kubernetes commands**
+
+| Command                             | Purpose                   |
+| ----------------------------------- | ------------------------- |
+| `kubectl get pods`                  | List Pods                 |
+| `kubectl get deployments`           | List Deployments          |
+| `kubectl get services`              | List Services             |
+| `kubectl get replicasets`           | List ReplicaSets          |
+| `kubectl get nodes`                 | List Nodes                |
+| `kubectl get all`                   | Common resources          |
+| `kubectl describe pod POD_NAME`     | Pod details/events        |
+| `kubectl logs POD_NAME`             | Container logs            |
+| `kubectl delete pod POD_NAME`       | Delete Pod                |
+| `kubectl delete deployment mynginx` | Delete Deployment         |
+| `kubectl delete service mynginx`    | Delete Service            |
+| `minikube dashboard`                | Open Kubernetes dashboard |
+| `minikube stop`                     | Stop local cluster        |
+| `minikube delete`                   | Delete local cluster      |
+
+### **Kubernetes YAML — Deployment**
+
+If the examiner asks you to create a YAML file instead of using commands:
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mynginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+```
+
+Save as `deployment.yaml`.
+
+```
+kubectl apply -f deployment.yaml
+kubectl get pods
+kubectl delete -f deployment.yaml
+```
+
+This YAML is an additional exam-ready example; your Week 12 manual primarily uses `kubectl` commands.&#x20;
+
+24BD1A663D-week12.docx
+
+
+
+### **Kubernetes concepts**
+
+| Term       | Meaning                                 |
+| ---------- | --------------------------------------- |
+| Pod        | Smallest deployable unit                |
+| Deployment | Manages desired Pods                    |
+| ReplicaSet | Maintains Pod replicas                  |
+| Service    | Stable network access                   |
+| Node       | Machine running Pods                    |
+| Cluster    | Group of Nodes                          |
+| Minikube   | Local Kubernetes cluster                |
+| kubectl    | Command-line tool to control Kubernetes |
+
+**Most important viva:** Docker runs containers; Kubernetes manages and maintains containerized applications across a cluster.
+
+## **Experiment 8 — Nagios Monitoring**
+
+**Aim:** Monitor hosts, services, and system health using Nagios.
+
+**Process:** Pull Nagios image → Run container → Open dashboard → View Hosts and Services → Interpret status.
+
+### **Commands**
+
+```
+docker pull jasonrivers/nagios:latest
+
+docker run --name nagiosdemo -p 8888:80 jasonrivers/nagios:latest
+```
+
+Open:
+
+`http://localhost:8888`
+
+Login credentials from your lab manual:
+
+```
+Username: nagiosadmin
+Password: nagios
+```
+
+### **What to check**
+
+| Dashboard section | Purpose              |
+| ----------------- | -------------------- |
+| Hosts             | Monitored computers  |
+| Services          | Monitored checks     |
+| Current Load      | CPU/system load      |
+| PING              | Network reachability |
+| HTTP              | Web server response  |
+| Root Partition    | Disk usage           |
+| Total Processes   | Process count        |
+
+### **Nagios status meanings**
+
+| Status   | Meaning                    |
+| -------- | -------------------------- |
+| OK       | Working normally           |
+| WARNING  | Possible problem           |
+| CRITICAL | Serious problem            |
+| UNKNOWN  | Unable to determine status |
+| UP/DOWN  | Host availability          |
+
+**Remember:** A host can be UP while an individual service shows WARNING or CRITICAL.
+
+### **Cleanup**
+
+```
+docker stop nagiosdemo
+docker rm nagiosdemo
+docker rmi jasonrivers/nagios:latest
+```
+
+**Viva:** Nagios monitors infrastructure and services and alerts administrators about problems.&#x20;
+
+24BD1A663D-week12.docx
+
+
+
+## **Experiment 9 — AWS EC2 Cloud Deployment**
+
+**Aim:** Create an Ubuntu virtual machine in AWS, deploy an application, and access it publicly.
+
+**Process:** Launch EC2 → Download key → SSH → Install Docker/Git → Clone project → Build image → Run container → Open public IP.
+
+### **Step 1 — AWS Console**
+
+For your AWS Academy account:
+
+**Canvas → Learner Lab → Start Lab → AWS → EC2 → Launch instance**
+
+| Setting       | Value                          |
+| ------------- | ------------------------------ |
+| Name          | `SE-Lab-Ubuntu`                |
+| AMI           | Ubuntu Server                  |
+| Instance type | Permitted micro instance       |
+| Key pair      | RSA, `.pem`                    |
+| SSH           | TCP 22, your public IPv4 `/32` |
+| HTTP          | TCP 80                         |
+| Storage       | 8 GiB or required minimum      |
+
+**Remember your actual troubleshooting:** Your SSH rule initially allowed only IPv6, while you were connecting to the instance's IPv4 address. Fixing the inbound SSH rule resolved the timeout.
+
+### **Step 2 — Connect through SSH**
+
+Linux:
+
+```
+cd ~/Downloads
+chmod 400 se-lab-key.pem
+ssh -i se-lab-key.pem ubuntu@PUBLIC_IP
+```
+
+Windows PowerShell:
+
+```
+ssh -i "C:\Users\Student\Downloads\se-lab-key.pem" ubuntu@PUBLIC_IP
+```
+
+### **Step 3 — Install software inside EC2**
+
+```
+sudo apt update
+sudo apt install -y docker.io git nano
+docker --version
+git --version
+```
+
+### **Step 4 — Clone your project**
+
+```
+git clone https://github.com/ShreeyanthD/docker-javaproject.git
+cd docker-javaproject
+```
+
+### **Step 5 — Your working Maven Java Dockerfile**
+
+This is the one you successfully built on EC2:
+
+```
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY --from=build /app/target/java-exam-practice-0.0.1-SNAPSHOT.jar app.jar
+CMD ["java", "-cp", "app.jar", "shreeyanthd.java_exam_practice.App"]
+```
+
+### **Step 6 — Build and run**
+
+```
+sudo docker build -t java-aws-demo .
+sudo docker run --name java-demo java-aws-demo
+```
+
+Expected:
+
+```
+Hello I am shreeyanth!
+```
+
+### **Step 7 — Deploy a public website**
+
+You also successfully tested Nginx:
+
+```
+echo '<h1>Hello from my AWS EC2 Server!</h1>' > index.html
+```
+
+```
+sudo docker run -d --name aws-website -p 80:80 \
+  -v "$PWD/index.html:/usr/share/nginx/html/index.html:ro" \
+  nginx:alpine
+```
+
+Open:
+
+```
+http://PUBLIC_IP
+```
+
+Expected: **Hello from my AWS EC2 Server!**
+
+### **If the examiner gives a Maven WAR web application**
+
+Your Week 13 manual uses a Docker image with host port 6060 mapped to container port 8080.&#x20;
+
+24BD1A663D-week13.docx
+
+
+
+Example Dockerfile for a Java 17 Maven web application compatible with Tomcat 10:
+
+```
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+FROM tomcat:10.1-jdk17
+COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/ROOT.war
+EXPOSE 8080
+```
+
+For older `javax.servlet` applications, use a compatible Tomcat version such as Tomcat 9.
+
+Build and run:
+
+```
+sudo docker build -t webapp .
+sudo docker run -d --name app-demo -p 6060:8080 webapp
+```
+
+Allow **Custom TCP 6060** in the EC2 security group, then open:
+
+```
+http://PUBLIC_IP:6060
+```
+
+### **AWS troubleshooting**
+
+| Problem                  | Check                                                   |
+| ------------------------ | ------------------------------------------------------- |
+| SSH timed out            | Port 22, correct IPv4 source, public IP, subnet routing |
+| Permission denied        | `.pem` key and Ubuntu username                          |
+| Website not opening      | Security group port, container status, port mapping     |
+| Docker permission denied | Use `sudo docker`                                       |
+| Browser shows 404        | WAR filename/context path or app routes                 |
+| Build failed             | Dockerfile, Maven errors, Java version                  |
+
+### **AWS cleanup**
+
+**EC2 → Instances → Select instance → Instance state → Terminate (delete)**
+
+Then **Canvas → End Lab**.
+
+## **Final 2-minute memory sheet**
+
+**Docker**
+
+&#x20;Copy
+
+```
+docker build -t myapp .
+docker run -d -p 8080:80 myapp
+docker ps
+```
+
+**Docker Compose**
+
+```
+docker compose up -d
+docker compose ps
+docker compose down
+```
+
+**Jenkins**
+
+```
+Git → Maven clean → install → test → package
+```
+
+**Webhook**
+
+```
+GitHub push → ngrok → Jenkins webhook → Build
+```
+
+**Kubernetes**
+
+```
+minikube start --driver=docker
+kubectl create deployment mynginx --image=nginx
+kubectl expose deployment mynginx --type=NodePort --port=80
+kubectl scale deployment mynginx --replicas=4
+kubectl get pods
+```
+
+**Nagios**
+
+```
+docker run --name nagiosdemo -p 8888:80 jasonrivers/nagios:latest
+```
+
+**AWS**
+
+```
+EC2 → SSH → Git Clone → Docker Build → Docker Run → Public IP
+```
+
+### **Five mistakes to avoid in the exam**
+
+1. Forgetting the `.` in `docker build -t myapp .`
+2. Reversing host/container ports in `-p 8080:80`.
+3. Using `sh` in a Windows Jenkins agent instead of `bat`.
+4. Forgetting `/github-webhook/` in the GitHub webhook URL.
+5. Forgetting to allow the application's port in the AWS EC2 security group.
+
+**You've actually performed all six announced major topics, bro.** The commands above are your final reference. Focus especially on the Jenkins pipeline script, Dockerfile syntax, Docker Compose YAML, and Kubernetes commands. Those are the easiest places to lose marks through small syntax mistakes.
+
+Good luck with your practical! 🔥
+/* docker pull jasonrivers/nagios:latest
+
+docker run -d --name nagios4 -p 8082:80 jasonrivers/nagios:latest*/
+
+whoami
+sudo apt update
+sudo apt install -y docker.io git
+sudo systemctl enable --now docker
+docker --version
+git --version
+cd ~
+git clone https://github.com/deepthisagar7/library-management.git
+cd library-management
+nano Dockerfile
+
+FROM maven:3.9-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+COPY . .
+
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY --from=build /app/target/library-management-1.0-SNAPSHOT.jar app.jar
+
+CMD ["java", "-cp", "app.jar", "com.library.LibraryManagement"] 
+
+
+sudo docker build -t library-management .
+sudo docker images
+sudo docker run --rm --name library-app library-management
+mkdir -p ~/library-site 
+cat > ~/library-site/index.html <<'EOF'
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Library Management System</title>
+</head>
+<body>
+    <h1>University Library Management System</h1>
+    <h2>Welcome to Our Digital Library</h2>
+
+    <h3>Available Services</h3>
+    <ul>
+        <li>Search Books</li>
+        <li>Issue Books</li>
+        <li>Return Books</li>
+        <li>Reserve Books</li>
+    </ul>
+
+    <h3>AWS Cloud Deployment</h3>
+    <p>Successfully deployed using Docker and AWS EC2.</p>
+</body>
+</html>
+EOF 
+sudo systemctl stop nginx 
+sudo docker rm -f library-website 2>/dev/null || true 
+sudo docker run -d \
+--name library-website \
+--restart unless-stopped \
+-p 80:80 \
+-v "$HOME/library-site/index.html:/usr/share/nginx/html/index.html:ro" \
+nginx:alpine 
+sudo docker ps 
+curl -4 https://checkip.amazonaws.com 
+
+services:
+  app:
+    build: .
+    image: metro-reservation-app
+    container_name: metro-app
+    ports:
+      - "8081:8080"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: metrodb
+      DB_USER: metrouser
+      DB_PASSWORD: MetroPass123
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - metro-network
+
+  db:
+    image: mysql:8.0
+    container_name: metro-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: MetroRoot123
+      MYSQL_DATABASE: metrodb
+      MYSQL_USER: metrouser
+      MYSQL_PASSWORD: MetroPass123
+    volumes:
+      - metro-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pMetroRoot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - metro-network
+
+networks:
+  metro-network:
+    name: metro-network
+
+volumes:
+  metro-data: 
+
+docker pull tomcat:10.1-jdk17
+docker pull mysql:8.0
+docker compose build app
+docker compose up -d
+docker ps
+docker compose ps
+docker compose logs app
+docker compose logs db
+http://localhost:8081
+:: 1. Create project folder
+mkdir wordpress-docker
+cd wordpress-docker
+
+:: 2. Create compose file
+notepad compose.yaml
+
+:: Paste the YAML configuration above, save and close Notepad.
+
+:: 3. Pull required images
+docker pull mysql:8.0
+docker pull wordpress:latest
+
+:: 4. Build and start containers
+docker compose up -d
+
+:: 5. Check running containers
+docker ps
+
+:: 6. Check all containers
+docker ps -a
+
+:: 7. Check WordPress logs
+docker logs library-wordpress
+
+:: 8. Check MySQL logs
+docker logs library-mysql
+
+:: 9. Inspect Docker network
+docker network inspect library-network
+
+:: 10. Check volumes
+docker volume ls
+
+:: 11. Open WordPress in browser
+start http://localhost:8080
+
+:: 12. Stop containers
+docker compose stop
+
+:: 13. Start containers again
+docker compose start
+
+:: 14. Stop and remove containers
+docker compose down 
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: library-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: wp123
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - library-network
+
+  wordpress:
+    image: wordpress:latest
+    container_name: library-wordpress
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wp123
+      WORDPRESS_DB_NAME: wordpress
+    depends_on:
+      - db
+    networks:
+      - library-network
+
+networks:
+  library-network:
+    name: library-network
+
+volumes:
+  mysql_data:
+scripted pipleline 
+
+/*node {
+
+    stage('Git Checkout') {
+        git branch: 'master',
+            url: 'https://github.com/Kumbhambhargavi75/HospitalManagementSystem.git'
+    }
+
+    stage('Compile') {
+        bat 'mvn clean compile'
+    }
+
+    stage('Test') {
+        bat 'mvn test'
+    }
+
+    stage('Package') {
+        bat 'mvn package -DskipTests'
+    }
+
+    stage('Archive Artifacts') {
+        archiveArtifacts artifacts: 'target/*.jar,target/*.war',
+                         allowEmptyArchive: true
+    }
+
+    stage('Deployment Ready') {
+        echo 'Hospital Management System build and tests completed successfully!'
+    }
+
+}*/ 
+
