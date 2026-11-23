@@ -1,0 +1,230 @@
+Important Git commands to remember for practical
+Purpose	Command
+Initialize	git init
+Clone	git clone URL
+Status	git status
+Add all files	git add .
+Commit	git commit -m "message"
+Push	git push origin main
+Pull	git pull origin main
+Fetch	git fetch origin
+Create branch	git checkout -b branch-name
+Switch branch	git switch branch-name
+Merge	git merge branch-name
+View branches	git branch -a
+View history	git log --oneline
+Resolve conflict stage	git add .
+Stash	git stash
+Restore stash	git stash pop
+Apply patch	git apply fix.patch
+
+
+
+
+Part A — Create Maven Java Project in Eclipse
+Step 1: Open Eclipse
+Open Eclipse and select your workspace.
+Step 2: Create Maven Project
+Go to:
+
+File → New → Project → Maven → Maven Project → Next
+Step 3: Choose workspace
+Keep the default workspace location and click Next.
+Step 4: Choose Archetype
+Select:
+
+maven-archetype-quickstart
+
+Version: 1.4
+
+Click Next.
+Step 5: Enter project details
+Field	Value
+Group ID	com.example
+Artifact ID	my-maven-project
+Version	Default
+Package	com.example
+
+Click Finish.
+Step 6: Project structure
+You should see:
+my-maven-project
+├── src/main/java
+├── src/test/java
+└── pom.xml
+
+
+Step 7: Update project
+Right-click project → Maven → Update Project → Finish.
+Step 8: Build commands in Eclipse
+Right-click project and select:
+- Run As → Maven Clean
+- Run As → Maven Install
+- Run As → Maven Test
+- Run As → Maven Build
+Step 9: Maven Build
+Right-click project → Run As → Maven Build.
+
+In Goals, type:
+clean install test
+
+
+Click Apply → Run.
+Step 10: Check output
+In Console, check:
+BUILD SUCCESS
+
+
+Step 11: Run application
+Right-click App.java → Run As → Java Application.
+
+Expected output:
+Hello World!
+
+
+Part B — Create Maven Web Project
+Step 1
+File → New → Project → Maven → Maven Project → Next
+Step 2
+Select archetype:
+maven-archetype-webapp
+
+
+Click Next.
+Step 3: Project details
+Field	Value
+Group ID	com.example
+Artifact ID	my-web-app
+
+Click Finish.
+Step 4: Add Servlet dependency
+Open pom.xml and add inside <dependencies>:
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>4.0.1</version>
+    <scope>provided</scope>
+</dependency>
+
+
+Step 5: Configure Tomcat
+In Eclipse:
+
+Window → Show View → Servers
+
+Then:
+
+Add Server → Apache Tomcat v9.0 → Next
+
+Select Tomcat installation directory and Finish.
+Step 6: Build Web Project
+Right-click project → Run As → Maven Build.
+
+Goals:
+clean install test
+
+
+Click Apply → Run.
+Step 7: Run on Tomcat
+Right-click index.jsp → Run As → Run on Server.
+
+Select Tomcat → Finish.
+Step 8: Check output
+You should see your Hello World webpage in the browser.
+
+Part C — Important Maven commands
+Run these in the project directory containing pom.xml:
+mvn test
+
+
+mvn clean install
+
+
+mvn package
+
+
+mvn clean
+
+
+mvn dependency:tree
+
+
+mvn -X
+
+
+
+Part D — Compiler Plugin
+Add this inside the pom.xml <build><plugins> section:
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.11.0</version>
+    <configuration>
+        <source>17</source>
+        <target>17</target>
+    </configuration>
+</plugin>
+
+
+Run:
+mvn package
+
+
+Inspect the generated JAR:
+jar tf target/myapp.jar
+
+
+
+Part E — JUnit Testing
+Create your test file under:
+src/test/java
+
+
+Run:
+mvn test
+
+
+Check test results:
+target/test-classes/
+target/surefire-reports/
+
+
+
+Part F — Resource Files
+Create:
+src/main/resources/config.properties
+
+
+After building, check:
+target/classes/
+
+
+The resource file should be copied there.
+
+Part G — Executable JAR
+Run:
+mvn package
+
+
+Then:
+java -jar target/myapp.jar
+
+
+
+Part H — WAR file
+In pom.xml:
+<packaging>war</packaging>
+
+
+Project structure:
+src/main/webapp/
+└── WEB-INF/
+    └── web.xml
+
+
+Build:
+mvn package
+
+
+Your WAR will be generated inside:
+target/
