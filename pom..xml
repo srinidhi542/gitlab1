@@ -1,0 +1,23 @@
+Quick revision
+Command	Purpose
+docker pull	Download image
+docker run	Create and run container
+docker ps	Running containers
+docker ps -a	All containers
+docker stop	Stop container
+docker start	Start container
+docker restart	Restart container
+docker rm	Delete container
+docker images	List images
+docker rmi	Delete image
+docker exec -it	Execute command inside container
+docker logs	View logs
+docker inspect	Detailed information
+docker commit	Create image from container
+docker push	Upload image
+docker login	Login Docker Hub
+docker logout	Logout
+docker network	Manage networks
+docker volume	Manage persistent storage
+docker stats	Resource usage
+
